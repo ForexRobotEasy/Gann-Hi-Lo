@@ -1,0 +1,91 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                           Gann Hi Lo             |
+//|                                                  forexroboteasy.com |
+//|                                                      Forex Robot Easy Team |
+//+------------------------------------------------------------------+
+#property indicator_chart_window
+#property indicator_buffers 4
+#property indicator_color1 Red
+#property indicator_color2 Lime
+#property indicator_color3 Gray
+#property indicator_color4 Gainsboro
+#property indicator_width1 2
+#property indicator_width2 2
+#property indicator_width3 1
+#property indicator_width4 1
+
+double HighBuffer[];
+double LowBuffer[];
+double MiddleBuffer[];
+double ShadowBuffer[];
+
+int OnInit()
+{
+    IndicatorBuffers(4);
+    SetIndexBuffer(0, HighBuffer);
+    SetIndexBuffer(1, LowBuffer);
+    SetIndexBuffer(2, MiddleBuffer);
+    SetIndexBuffer(3, ShadowBuffer);
+    SetIndexStyle(0, DRAW_LINE);
+    SetIndexStyle(1, DRAW_LINE);
+    SetIndexStyle(2, DRAW_LINE);
+    SetIndexStyle(3, DRAW_LINE);
+    SetIndexLabel(0, 'Highs');
+    SetIndexLabel(1, 'Lows');
+    SetIndexLabel(2, 'Middle');
+    SetIndexLabel(3, 'Shadow');
+    SetIndexShift(0, 1);
+    SetIndexShift(1, 1);
+    SetIndexShift(2, 1);
+    SetIndexShift(3, 1);
+    SetIndexDrawBegin(0, 1);
+    SetIndexDrawBegin(1, 1);
+    SetIndexDrawBegin(2, 1);
+    SetIndexDrawBegin(3, 1);
+    IndicatorShortName('Gann Hi Lo');
+    return INIT_SUCCEEDED;
+}
+
+int OnCalculate(const int rates_total, const int prev_calculated, const datetime &time[], const double &open[], const double &high[], const double &low[], const double &close[], const long &tick_volume[], const long &volume[], const int &spread[])
+{
+    int i;
+    int limit = rates_total - prev_calculated;
+    
+    if (prev_calculated == 0)
+    {
+        for (i = 1; i < rates_total; i++)
+        {
+            HighBuffer[i] = 0;
+            LowBuffer[i] = 0;
+            MiddleBuffer[i] = 0;
+            ShadowBuffer[i] = 0;
+        }
+    }
+    
+    for (i = limit; i >= 0; i--)
+    {
+        double max_high = 0;
+        double min_low = 0;
+        
+        for (int j = i + 1; j < rates_total; j++)
+        {
+            if (high[j] > max_high || max_high == 0)
+            {
+                max_high = high[j];
+            }
+            
+            if (low[j] < min_low || min_low == 0)
+            {
+                min_low = low[j];
+            }
+        }
+        
+        HighBuffer[i] = max_high;
+        LowBuffer[i] = min_low;
+        MiddleBuffer[i] = (max_high + min_low) / 2;
+        ShadowBuffer[i] = max_high - min_low;
+    }
+    
+    return rates_total;
+}
